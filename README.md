@@ -1,0 +1,4 @@
+# ProgettoFVAB
+VERSIONI:
+
+-PYTHON 3.7.0
