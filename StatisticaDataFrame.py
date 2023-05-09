@@ -31,16 +31,15 @@ for i in range(60):
         if (df[0].isnull().values.any()):
             if(index==3):
                 if(index_n==4):
+                    '''
+                    Soluzione neutra completa:
+                    3-3-3-5
+                    '''
                     test=test[j,val]=3
                     test=test[j,val+1]=3
                     test=test[j,val+2]=3
                     test=test[j,val+3]=5
-                    '''
-                    Soluzione neutra completa(:
-                    3-3-3-5
-                    '''
                 elif(index_n==3):
-
                     '''
                     Soluzione neutra:
                     Media partecipanti con neutro 4
@@ -54,6 +53,14 @@ for i in range(60):
                     '''
             else:
                 for i in range(0,4):
+                    '''
+                    Soluzione prime 3 colonne:
+                    -Se max value = 5 allora:
+                    gli altri vanno a 1
+                    5-1-1-1
+                    1-5-1-1
+                    1-1-5-1
+                    
                     if index_n==5:
                         if i is index:
                             test[val+i]=5
@@ -63,18 +70,6 @@ for i in range(60):
                         if i is index:
                             test[val+i]=4
                         else:
-                            #sticazzi
                     elif index_n==3:
-                        #mammt
-
-
-                '''
-                Soluzione prime 3 colonne:
-                -Se max value = 5 allora:
-                gli altri vanno a 1
-                5-1-1-1
-                1-5-1-1
-                1-1-5-1
-                '''
-
+                    '''
     val+=4
