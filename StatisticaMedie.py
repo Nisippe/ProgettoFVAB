@@ -35,6 +35,12 @@ df2=df2.assign(num1=list1,num2=list2,num3=list3,num4=list4,num5=list5)
 df2.to_csv('TXT/MediaColonne.txt',sep=',')
 
 
+#Get Media Neutro X
+
+
+
+
+
 
 
 
