@@ -4,28 +4,25 @@ import pandas as pd
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(static_image_mode=False,model_complexity=0, min_detection_confidence=0.5,min_tracking_confidence=0.5)
+pose = mp_pose.Pose(static_image_mode=False,model_complexity=1, min_detection_confidence=0.5,min_tracking_confidence=0.5)
 
 
 def getAllFramesFromVideo(vid):
         frames=[]
         n=0
         while vid.isOpened():
-            # if frame is read correctly ret is True
             ret, image = vid.read()
             if ret is True:
                 frames.append(image)
                 n+=1
-                #print(str(image) + "mammt")
             else:
                 break
-        print(n)
         return frames
 
 def getEtichettaFromVideo(n,emozione):
     p = pd.read_csv('C:/Users/drugo/PycharmProjects/ProgettoFVAB/TXT/Etichette_Percentuali.txt')
-    palle=p.loc[:,emozione]
-    return palle[n]
+    etichetta=p.loc[:,emozione]
+    return etichetta[n]
 
 def getAllVideo():
     '''
@@ -42,8 +39,8 @@ def getAllVideo():
 def video_Draw_Landmarks(vid,out):
     last_elbow_landmark = 0
     last_elbow2_landmark = 0
+    frame_saltati=0
     while vid.isOpened():
-        # if frame is read correctly ret is True
         ret, image = vid.read()
         if ret is True:
             results = pose.process(image)
@@ -63,7 +60,8 @@ def video_Draw_Landmarks(vid,out):
                 else:
                     if conf_shoulder_distance(shoulder_sx,shoulder_dx) or conf_elbow(last_elbow_landmark,elbow_sx) or conf_elbow(last_elbow2_landmark,elbow_dx)\
                             or conf_hip_distance(hip_sx,hip_dx) or conf_knees_distance(knee_sx,knee_dx):
-                        pass
+                        frame_saltati+=1
+                        #pass
                     else:
                         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
                         out.write(image)
@@ -75,7 +73,7 @@ def video_Draw_Landmarks(vid,out):
 
         else:
             break
-
+    print(frame_saltati)
     out.release()
 
 
@@ -95,7 +93,4 @@ def conf_elbow(last_elbow_landmark, elbow):
     if (abs(elbow.x - last_elbow_landmark.x) >= 0.025):
         return True
 
-'''def conf_wrist(last_wrist_landmark, wrist):
-    if (abs(wrist.x - last_wrist_landmark.x) >= 0.10):
-        return True'''
 
