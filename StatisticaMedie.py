@@ -1,6 +1,6 @@
 import pandas as pd
 
-train_validation=pd.read_csv('../CSV/Responses_train+validation.csv')
+train_validation=pd.read_csv('CSV/Responses_train+validation.csv')
 test=train_validation.apply(pd.to_numeric,errors='coerce')
 test=test.drop('Gait ID', axis=1)
 

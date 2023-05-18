@@ -5,8 +5,26 @@ import pandas as pd
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(static_image_mode=False,model_complexity=1, min_detection_confidence=0.5,min_tracking_confidence=0.5)
-df=pd.read_csv(('C:/Users/drugo/PycharmProjects/ProgettoFVAB/TXT/N_Frame_Tagliati.txt'))
+df=pd.read_csv('C:/Users/anton/Desktop/ProgettoFVAB/TXT/N_Frame_Tagliati.txt')
 
+
+def extract_Keypoints(vid):
+    width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+    height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    list=[]
+    list_x_y=[]
+    while vid.isOpened():
+        ret, image = vid.read()
+        if ret is True:
+            results = pose.process(image)
+            x_coordinate = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].x * width
+            y_coordinate = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].y * height
+            list_x_y.append(x_coordinate)
+            list_x_y.append(y_coordinate)
+            list.append(list_x_y)
+        else:
+            break
+    return list
 def getAllFramesFromVideo(vid):
         frames=[]
         n=0
@@ -20,7 +38,7 @@ def getAllFramesFromVideo(vid):
         return frames
 
 def getEtichettaFromVideo(n,emozione):
-    p = pd.read_csv('C:/Users/drugo/PycharmProjects/ProgettoFVAB/TXT/Etichette_Percentuali.txt')
+    p = pd.read_csv('C:/Users/anton/Desktop/ProgettoFVAB/TXT/Etichette_Percentuali.txt')
     etichetta=p.loc[:,emozione]
     return etichetta[n]
 
@@ -75,7 +93,7 @@ def video_Draw_Landmarks(vid,out):
             break
     print(frame_saltati)
     df.loc[len(df)]=frame_saltati
-    df.to_csv('C:/Users/drugo/PycharmProjects/ProgettoFVAB/TXT/N_Frame_Tagliati.txt', sep=',')
+    df.to_csv('C:/Users/anton/Desktop/ProgettoFVAB/TXT/N_Frame_Tagliati.txt', sep=',')
     out.release()
 
 

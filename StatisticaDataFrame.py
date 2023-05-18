@@ -1,8 +1,8 @@
 import pandas as pd
 
-rows=pd.read_csv('../TXT/MediaRighe.txt')
-cols=pd.read_csv('../TXT/MediaColonne.txt')
-train_validation=pd.read_csv('../CSV/Responses_train+validation.csv')
+rows=pd.read_csv('TXT/MediaRighe.txt')
+cols=pd.read_csv('TXT/MediaColonne.txt')
+train_validation=pd.read_csv('CSV/Responses_train+validation.csv')
 test=train_validation.apply(pd.to_numeric,errors='coerce')
 test=test.drop('Gait ID', axis=1)
 
@@ -14,7 +14,7 @@ col3=cols['num3']
 col4=cols['num4']
 col5=cols['num5']
 
-etichette_perc=pd.read_csv('../TXT/Etichette_Percentuali.txt')
+etichette_perc=pd.read_csv('TXT/Etichette_Percentuali.txt')
 
 
 def check_big_col(col1,col2,col3,col4,col5):
