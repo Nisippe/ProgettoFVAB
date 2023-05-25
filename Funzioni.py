@@ -1,11 +1,14 @@
 import cv2
 import mediapipe as mp
+import numpy as np
 import pandas as pd
+from PIL import Image
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(static_image_mode=False,model_complexity=1, min_detection_confidence=0.5,min_tracking_confidence=0.5)
 df=pd.read_csv('C:/Users/anton/Desktop/ProgettoFVAB/TXT/N_Frame_Tagliati.txt')
+
 
 
 def extract_Keypoints(vid):
@@ -58,6 +61,7 @@ def video_Draw_Landmarks(vid,out):
     last_elbow_landmark = 0
     last_elbow2_landmark = 0
     frame_saltati=0
+    image_t=np.zeros((1920,1080,3),np.uint8)
     while vid.isOpened():
         ret, image = vid.read()
         if ret is True:
@@ -81,8 +85,10 @@ def video_Draw_Landmarks(vid,out):
                         frame_saltati+=1
                         #pass
                     else:
-                        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-                        out.write(image)
+                        mp_drawing.draw_landmarks(image_t, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                        out.write(image_t)
+                        image_t = np.zeros((1920, 1080, 3), np.uint8)
+                        #cv2.imshow('cazzi',image_t)
                     last_elbow_landmark = elbow_sx
                     last_elbow2_landmark = elbow_dx
 
@@ -114,3 +120,10 @@ def conf_elbow(last_elbow_landmark, elbow):
         return True
 
 
+vid=cv2.VideoCapture('C:/Users/anton/Desktop/ProgettoFVAB/train+validation/VID_RGB_000.mp4')
+fps = vid.get(cv2.CAP_PROP_FPS)
+width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+codec = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+out = cv2.VideoWriter('C:/Users/anton/Desktop/ProgettoFVAB/Video_Train/test.avi', codec, fps, (int(width), int(height)))
+video_Draw_Landmarks(vid,out)
