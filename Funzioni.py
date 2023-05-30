@@ -30,12 +30,10 @@ def extract_Keypoints(vid):
     return list
 def getAllFramesFromVideo(vid):
         frames=[]
-        n=0
         while vid.isOpened():
             ret, image = vid.read()
             if ret is True:
                 frames.append(image)
-                n+=1
             else:
                 break
         return frames
