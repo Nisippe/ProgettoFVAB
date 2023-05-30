@@ -22,19 +22,19 @@ X_train=X_train[:,:,:,0]
 Y_train=np.array(list_2)
 print(X_train.shape)
 print(Y_train.shape)
-#model
+
+#modello temporaneo
 model = Sequential()
 model.add(LSTM(64,input_shape=(1920,1080)))
 model.add(Dense(1,activation='sigmoid'))
-
 model.compile(optimizer='Adam',loss='mean_squared_error')
-#print(model.summary())
 model.fit(X_train,Y_train)
+
+
 vid2 = cv2.VideoCapture('C:/Users/anton/Desktop/ProgettoFVAB/test/VID_RGB_061.mp4')
 x_test=f.getAllFramesFromVideo(vid2)
 frame_0=x_test[0]
 frame_0=frame_0[:,:,0]
 list=[]
 list.append(frame_0)
-#print((np.array(list)).shape)
 print(model.predict(np.array(list)))
