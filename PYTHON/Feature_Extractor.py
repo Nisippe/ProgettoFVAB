@@ -1,5 +1,9 @@
-import keras
+from keras import Sequential
+from keras.layers import SimpleRNN, Dense
+from tensorflow import keras
+import cv2
 import numpy as np
+import Funzioni as f
 IMG_WIDTH=1920
 IMG_HEIGHT=1080
 
@@ -19,13 +23,11 @@ def build_feature_extractor():
     outputs = feature_extractor(preprocessed)
     return keras.Model(inputs, outputs, name="feature_extractor")
 
-
-def prepare_all_videos(df, root_dir):
-    num_samples = len(df)
-    video_paths = df["video_name"].values.tolist()
-    labels = df["tag"].values
-    labels = label_processor(labels[..., None]).numpy()
-
+NUM_FEATURES=2048
+MAX_SEQ_LENGTH=22
+def prepare_all_videos():
+    num_samples = 61
+    video_paths = f.getAllVideoGait()
     # `frame_masks` and `frame_features` are what we will feed to our sequence model.
     # `frame_masks` will contain a bunch of booleans denoting if a timestep is
     # masked with padding or not.
@@ -35,9 +37,10 @@ def prepare_all_videos(df, root_dir):
     )
 
     # For each video.
-    for idx, path in enumerate(video_paths):
-        # Gather all its frames and add a batch dimension.
-        frames = load_video(os.path.join(root_dir, path))
+    for idx,video in enumerate(video_paths):
+        vid = cv2.VideoCapture('Video_Cut_Landmarks/' + video)
+        frames = f.getAllFramesFromVideo(vid)
+        frames = np.array(frames)
         frames = frames[None, ...]
 
         # Initialize placeholders to store the masks and features of the current video.
@@ -55,18 +58,74 @@ def prepare_all_videos(df, root_dir):
                     batch[None, j, :]
                 )
             temp_frame_mask[i, :length] = 1  # 1 = not masked, 0 = masked
-
+        print(idx)
         frame_features[idx,] = temp_frame_features.squeeze()
         frame_masks[idx,] = temp_frame_mask.squeeze()
 
-    return (frame_features, frame_masks), labels
+    return (frame_features, frame_masks)
 
 
-train_data, train_labels = prepare_all_videos(train_df, "train")
-test_data, test_labels = prepare_all_videos(test_df, "test")
+def prepare_single_video(frames):
+    frames = np.array(frames)
+    frames = frames[None, ...]
+    frame_mask = np.zeros(shape=(1, MAX_SEQ_LENGTH,), dtype="bool")
+    frame_features = np.zeros(shape=(1, MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
 
-print(f"Frame features in train set: {train_data[0].shape}")
-print(f"Frame masks in train set: {train_data[1].shape}")
+    for i, batch in enumerate(frames):
+        video_length = batch.shape[0]
+        length = min(MAX_SEQ_LENGTH, video_length)
+        for j in range(length):
+            frame_features[i, j, :] = feature_extractor.predict(batch[None, j, :])
+        frame_mask[i, :length] = 1  # 1 = not masked, 0 = masked
+
+    return frame_features, frame_mask
+
+def create_model():
+    frame_features_input=keras.Input((MAX_SEQ_LENGTH,NUM_FEATURES))
+    mask_input=keras.Input((MAX_SEQ_LENGTH,),dtype='bool')
+    print(frame_features_input.shape)
+    print(mask_input.shape)
+
+    model=Sequential()
+    model.add(SimpleRNN(4, input_shape=(22,2048)))
+    model.add(Dense(units=1))
+    model.compile(loss='mean_squared_error', optimizer='adam')
+    return model
+
+    return model
+
+
+
+
+def train_model(emozione):
+    modello=create_model()
+    x_train=prepare_all_videos()
+    y_train=f.getListEtichettaFromVideos(emozione)
+    y_train=np.array(y_train)
+    modello.fit(x_train[0],y_train,validation_split=0.3,epochs=500)
+    modello.save(str(emozione)+'Model.keras')
+    return modello
+
+def test_video(frames):
+    modello1 = keras.models.load_model('HappyModel.keras')
+    modello2 = keras.models.load_model('AngryModel.keras')
+    modello3 = keras.models.load_model('SadModel.keras')
+    modello4 = keras.models.load_model('NeutralModel.keras')
+    frame_features, frame_mask=prepare_single_video(frames)
+    print('Happy: '+ str(modello1.predict(frame_features)))
+    print('Angry: '+ str(modello2.predict(frame_features)))
+    print('Sad: ' + str(modello3.predict(frame_features)))
+    print('Neutral: ' + str(modello4.predict(frame_features)))
 
 
 feature_extractor = build_feature_extractor()
+train_model('happy')
+train_model('angry')
+train_model('sad')
+train_model('neutral')
+videos=f.getAllTestVideos()
+vid = cv2.VideoCapture('test/' + videos[1])
+frames=f.video_DrawCut_Landmarks(vid)
+frames=frames[:22]
+test_video(frames)
+

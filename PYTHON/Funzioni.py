@@ -1,12 +1,9 @@
 import cv2
 import mediapipe as mp
-import numpy as np
 import pandas as pd
+from skimage.metrics import structural_similarity as ssim
 
-mp_drawing = mp.solutions.drawing_utils
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(static_image_mode=False,model_complexity=1, min_detection_confidence=0.5,min_tracking_confidence=0.5)
-df=pd.read_csv('../TXT/N_Frame_Tagliati.txt')
+
 
 def getAllFramesFromVideo(vid):
         """
@@ -34,6 +31,12 @@ def getEtichettaFromVideo(n,emozione):
     etichetta=p.loc[:,emozione]
     return etichetta[n]
 
+def getListEtichettaFromVideos(emozione):
+    list=[]
+    for i in range(0,61):
+        list.append(getEtichettaFromVideo(i,emozione))
+    return list
+
 def getAllVideo():
     """
     Ottiene una lista con i nomi di tutti i video
@@ -49,34 +52,52 @@ def getAllVideo():
 def getAllVideoGait():
     list=[]
     for i in range(0,61):
-        list.append('VID_RGB_CUT_'+str(i))
+        list.append('VID_RGB_CUT_'+str(i)+'.mp4')
     return list
 
+def getAllTestVideos():
+    list = []
+    for i in range(61, 76):
+        list.append('VID_RGB_0' + str(i) + '.mp4')
+    return list
 
-def video_Draw_Landmarks(vid,out):
-    while vid.isOpened():
-        ret, image = vid.read()
-        if ret is True:
-            results = pose.process(image)
-            if results.pose_landmarks:
-                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-                out.write(image)
-
-            cv2.waitKey(1)
+def video_cut(frames,out):
+    frame_iniziale=frames[0]
+    i=0
+    for frame in frames:
+        i=i+1
+        if compare(frame_iniziale, frame) > 0.80 and i>20:
+            return i
         else:
-            break
-        out.release
-def video_DrawCut_Landmarks(vid,out):
+            out.write(frame)
+    cv2.waitKey(1)
+    out.release()
+
+def video_cut_val(frames,out):
+    i=0
+    for frame in frames:
+        i=i+1
+        if i==22:
+            return i
+        else:
+            out.write(frame)
+    cv2.waitKey(1)
+    out.release()
+
+def video_DrawCut_Landmarks(vid):
     """
     Disegna i landmarks sul video e lo salva
     :param vid: video (VideoCapture)
     :param out: VideoWriter
     """
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detection_confidence=0.5,
+                        min_tracking_confidence=0.5)
+
     last_elbow_landmark = 0
     last_elbow2_landmark = 0
-    frame=None
-
-    frame_saltati=0
+    frames=[]
     while vid.isOpened():
         ret, image = vid.read()
         if ret is True:
@@ -96,22 +117,16 @@ def video_DrawCut_Landmarks(vid,out):
                 else:
                     if conf_shoulder_distance(shoulder_sx,shoulder_dx) or conf_elbow(last_elbow_landmark,elbow_sx) or conf_elbow(last_elbow2_landmark,elbow_dx)\
                             or conf_hip_distance(hip_sx,hip_dx) or conf_knees_distance(knee_sx,knee_dx):
-                        frame_saltati+=1
+                        pass
                     else:
                         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-                        out.write(image)
+                        frames.append(image)
                     last_elbow_landmark = elbow_sx
                     last_elbow2_landmark = elbow_dx
-
-
-
             cv2.waitKey(1)
         else:
             break
-    df.loc[len(df)]=frame_saltati
-    df.to_csv('C:/Users/anton/Desktop/ProgettoFVAB/TXT/N_Frame_Tagliati.txt', sep=',')
-    out.release()
-
+    return frames
 
 def conf_shoulder_distance(shoulder_sx,shoulder_dx):
     """
@@ -153,46 +168,19 @@ def conf_elbow(last_elbow_landmark, elbow):
     if (abs(elbow.x - last_elbow_landmark.x) >= 0.025):
         return True
 
-from skimage.metrics import structural_similarity as ssim
-
 def compare(img1,img2):
     gray_image1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray_image2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
     # Calcola l'indice SSIM
     similarity = ssim(gray_image1, gray_image2)
-
+    print(similarity)
     # Restituisce l'indice SSIM
     return similarity
 
 
-def video_cut(vid,out):
-    frame=None
-    i=0
-    while vid.isOpened():
-        ret, image = vid.read()
-        if ret is True:
-            if frame is None:
-                frame=image
-                out.write(image)
-            else:
-                i = i + 1
-                if i > 10:
-                    if compare(frame, image) > 0.92:
-                        print('ma seriamente so uguali?')
-                        return
-                out.write(image)
-                print(compare(frame, image))
-
-        else:
-            return
 
 
 
-vid=cv2.VideoCapture('C:/Users/anton/Desktop/ProgettoFVAB/train+validation/VID_RGB_002.mp4')
-fps = vid.get(cv2.CAP_PROP_FPS)
-width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-codec = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-out = cv2.VideoWriter('C:/Users/anton/Desktop/ProgettoFVAB/Video_Train/VID_RGB_CUT_2GAIT'+'.avi', codec, fps, (int(width), int(height)))
-video_cut(vid,out)
+
+

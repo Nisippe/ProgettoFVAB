@@ -8,7 +8,7 @@ import Funzioni as f
 list=[]
 list_2=[]
 for i in range(0,5):
-    vid=cv2.VideoCapture('C:/Users/anton/Desktop/ProgettoFVAB/Video_Train/VID_RGB_CUT_'+str(i)+'.avi')
+    vid=cv2.VideoCapture('C:/Users/anton/Desktop/ProgettoFVAB/Video_Train_Max/VID_RGB_CUT_'+str(i)+'.avi')
     frame_1=f.getAllFramesFromVideo(vid)
     frame_x=frame_1[0]
     list.append(frame_x)
