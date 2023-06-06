@@ -119,7 +119,7 @@ def test_video(frames):
 
 
 feature_extractor = build_feature_extractor()
-train_model('happy')
+'''train_model('happy')
 train_model('angry')
 train_model('sad')
 train_model('neutral')
@@ -127,5 +127,5 @@ videos=f.getAllTestVideos()
 vid = cv2.VideoCapture('test/' + videos[1])
 frames=f.video_DrawCut_Landmarks(vid)
 frames=frames[:22]
-test_video(frames)
+test_video(frames)'''
 
