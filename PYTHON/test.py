@@ -1,12 +1,15 @@
-import Funzioni as f
+import keras
 import cv2
-videos=f.getAllVideo()
-vid = cv2.VideoCapture('C:/Users/anton/Desktop/ProgettoFVAB/train+validation/' + videos[0])
-fps = vid.get(cv2.CAP_PROP_FPS)
-width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-codec = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-out = cv2.VideoWriter('Video_Cut_Landmarks/TEST'+'.mp4', codec, fps,(int(width), int(height)))
-f.video_DrawCut_Landmarks(vid,out)
+import Feature_Extractor as fe
+import numpy as np
+modello=keras.models.load_model('Modello.keras')
+path='C:/Users/drugo/PycharmProjects/ProgettoFVAB/Video_Test_Landmarks/'
 
-out = cv2.VideoWriter('Video_Gait_Landmarks/TEST'+'.mp4', codec, fps,(int(width), int(height)))
+for i in range(61,76):
+    vid=cv2.VideoCapture(path+'VID_RGB_CUT_'+str(i)+'.mp4')
+    list=[]
+    features=fe.extract_features_from_video(vid)
+    list.append(features)
+    list=np.array(list)
+    print(list.shape)
+    print(modello.predict(list))

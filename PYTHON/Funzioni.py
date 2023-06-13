@@ -66,7 +66,7 @@ def video_cut(frames,out):
     i=0
     for frame in frames:
         i=i+1
-        if compare(frame_iniziale, frame) > 0.80 and i>20:
+        if compare(frame_iniziale, frame) > 0.90 and i>25:
             return i
         else:
             out.write(frame)
@@ -77,12 +77,27 @@ def video_cut_val(frames,out):
     i=0
     for frame in frames:
         i=i+1
-        if i==22:
+        if i==25:
             return i
         else:
             out.write(frame)
     cv2.waitKey(1)
     out.release()
+
+def video_Draw_Landmarks(vid,out):
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detection_confidence=0.5,min_tracking_confidence=0.5)
+    while vid.isOpened():
+        ret, image = vid.read()
+        if ret is True:
+            results = pose.process(image)
+            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+            out.write(image)
+        else:
+            break
+        cv2.waitKey(1)
+
 
 def video_DrawCut_Landmarks(vid):
     """
