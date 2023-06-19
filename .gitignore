@@ -1,2 +1,5 @@
 /PYTHON/X_train.npy
-/PYTHON/Modello.keras
+/PYTHON/ModelloHappy.keras
+/PYTHON/ModelloAngry.keras
+/PYTHON/ModelloSad.keras
+/PYTHON/ModelloNeutral.keras

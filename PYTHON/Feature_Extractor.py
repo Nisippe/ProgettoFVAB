@@ -4,12 +4,16 @@ from keras.applications.vgg16 import VGG16
 from keras.applications.vgg16 import preprocess_input
 import Funzioni as f
 
-# Carica il modello di rete neurale convoluzionale preaddestrato (es. VGG16)
+#Carica il modello di rete neurale convoluzionale preaddestrato (VGG16)
 base_model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
 
-# Estrai le features dai fotogrammi del video utilizzando il modello
 def extract_features_from_video(vid):
+    """
+    Estrai le features dai fotogrammi del video utilizzando il modello
+    :param vid: VideoCapture
+    :return: features del video
+    """
     frames = f.getAllFramesFromVideo(vid)
     list_frames=[]
     for frame in frames:

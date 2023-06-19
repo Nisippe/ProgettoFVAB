@@ -32,6 +32,11 @@ def getEtichettaFromVideo(n,emozione):
     return etichetta[n]
 
 def getListEtichettaFromVideos(emozione):
+    """
+    Ottiene la lista delle percentuali dei video data quell'emozione
+    :param emozione: quale emozione scegliere (happy,angry,sad,neutral)
+    :return: la lista delle percentuali
+    """
     list=[]
     for i in range(0,61):
         list.append(getEtichettaFromVideo(i,emozione))
@@ -50,18 +55,31 @@ def getAllVideo():
     return list
 
 def getAllVideoGait():
+    """
+    Ottiene una lista con i nomi di tutti i video gait/landmarks
+    :return: lista con i nomi di tutti i video gait/landmarks
+    """
     list=[]
     for i in range(0,61):
         list.append('VID_RGB_CUT_'+str(i)+'.mp4')
     return list
 
 def getAllTestVideos():
+    """
+    Ottiene una lista con i nomi di tutti i video test
+    :return: lista con i nomi di tutti i video test
+    """
     list = []
     for i in range(61, 76):
         list.append('VID_RGB_0' + str(i) + '.mp4')
     return list
 
 def video_cut(frames,out):
+    """
+    Confronta il primo frame con l'inizio di un nuovo ciclo di gait e lo taglia
+    :param frames: frames di un video
+    :param out: VideoWriter
+    """
     frame_iniziale=frames[0]
     i=0
     for frame in frames:
@@ -74,6 +92,11 @@ def video_cut(frames,out):
     out.release()
 
 def video_cut_val(frames,out):
+    """
+    Confronta il primo frame con l'inizio di un nuovo ciclo di gait e lo taglia
+    :param frames: frames di un video
+    :param out: VideoWriter
+    """
     i=0
     for frame in frames:
         i=i+1
@@ -85,6 +108,11 @@ def video_cut_val(frames,out):
     out.release()
 
 def video_Draw_Landmarks(vid,out):
+    """
+    Disegna i landmarks sul video e lo salva
+    :param vid: video (VideoCapture)
+    :param out: VideoWriter
+    """
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detection_confidence=0.5,min_tracking_confidence=0.5)
@@ -98,92 +126,13 @@ def video_Draw_Landmarks(vid,out):
             break
         cv2.waitKey(1)
 
-
-def video_DrawCut_Landmarks(vid):
-    """
-    Disegna i landmarks sul video e lo salva
-    :param vid: video (VideoCapture)
-    :param out: VideoWriter
-    """
-    mp_drawing = mp.solutions.drawing_utils
-    mp_pose = mp.solutions.pose
-    pose = mp_pose.Pose(static_image_mode=False, model_complexity=1, min_detection_confidence=0.5,
-                        min_tracking_confidence=0.5)
-
-    last_elbow_landmark = 0
-    last_elbow2_landmark = 0
-    frames=[]
-    while vid.isOpened():
-        ret, image = vid.read()
-        if ret is True:
-            results = pose.process(image)
-            if results.pose_landmarks:
-                shoulder_sx = results.pose_landmarks.landmark[11]
-                shoulder_dx = results.pose_landmarks.landmark[12]
-                elbow_sx = results.pose_landmarks.landmark[13]
-                elbow_dx = results.pose_landmarks.landmark[14]
-                hip_sx = results.pose_landmarks.landmark[23]
-                hip_dx = results.pose_landmarks.landmark[24]
-                knee_sx = results.pose_landmarks.landmark[25]
-                knee_dx = results.pose_landmarks.landmark[26]
-                if last_elbow_landmark == 0:
-                    last_elbow_landmark = elbow_sx
-                    last_elbow2_landmark = elbow_dx
-                else:
-                    if conf_shoulder_distance(shoulder_sx,shoulder_dx) or conf_elbow(last_elbow_landmark,elbow_sx) or conf_elbow(last_elbow2_landmark,elbow_dx)\
-                            or conf_hip_distance(hip_sx,hip_dx) or conf_knees_distance(knee_sx,knee_dx):
-                        pass
-                    else:
-                        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-                        frames.append(image)
-                    last_elbow_landmark = elbow_sx
-                    last_elbow2_landmark = elbow_dx
-            cv2.waitKey(1)
-        else:
-            break
-    return frames
-
-def conf_shoulder_distance(shoulder_sx,shoulder_dx):
-    """
-    Confronta la distanza tra la spalla sx e la spalla dx
-    :param shoulder_sx: coordinate spalla sx
-    :param shoulder_dx: coordinate spalla dx
-    :return: True se la distanza tra le due spalle è minore di 0.12 altrimenti False
-    """
-    if(abs(shoulder_sx.x - shoulder_dx.x) <= 0.12):
-        return True
-
-def conf_hip_distance(hip_sx,hip_dx):
-    """
-    Confronta la distanza tra il fianco sx e il fianco dx
-    :param hip_sx: coordinate fianco sx
-    :param hip_dx: coordinate fianco dx
-    :return: True se la distanza tra i due fianchi è minore di 0.04 altrimenti False
-    """
-    if (abs(hip_sx.x - hip_dx.x) <= 0.04):
-        return True
-
-def conf_knees_distance(knee_sx,knee_dx):
-    """
-    Confronta la distanza tra il ginocchio sx e il ginocchio dx
-    :param knee_sx: coordinate ginocchio sx
-    :param knee_dx: coordinate ginocchio dx
-    :return: True se la distanza tra le due ginocchia è minore di 0.03 altrimenti False
-    """
-    if (abs(knee_sx.x - knee_dx.x) <= 0.03):
-        return True
-
-def conf_elbow(last_elbow_landmark, elbow):
-    """
-    Confronta la distanza tra il gomito del frame attuale e il gomito del frame precedente
-    :param last_elbow_landmark: coordinate del gomito del frame precedente
-    :param elbow: coordinate del gomito del frame attuale
-    :return: True se la distanza tra le due è maggiore o uguale di 0.025 altrimenti False
-    """
-    if (abs(elbow.x - last_elbow_landmark.x) >= 0.025):
-        return True
-
 def compare(img1,img2):
+    """
+    Compara due immagini
+    :param img1: immagine 1
+    :param img2: immagine 2
+    :return: ritorna l'indice di similarità tra le due immagini
+    """
     gray_image1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray_image2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 

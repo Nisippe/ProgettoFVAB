@@ -6,7 +6,7 @@ videos=f.getAllVideo()
 path='C:/Users/drugo/PycharmProjects/ProgettoFVAB/train+validation/'
 indice=0
 
-'''
+
 #video_cut
 for video in videos:
     vid=cv2.VideoCapture(path+video)
@@ -18,9 +18,9 @@ for video in videos:
     frames=f.getAllFramesFromVideo(vid)
     f.video_cut_val(frames,out)
     indice=indice+1
-'''
+
 path2='C:/Users/drugo/PycharmProjects/ProgettoFVAB/Video_Cut/'
-videos2=f.getAllVideoGait()
+videos2=f.getAllTestVideos()
 indice=0
 
 #video_landmarks

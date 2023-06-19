@@ -15,8 +15,6 @@
 
 -NUMPY: 1.21.6
 
-## PROBLEMI DA RISOLVERE:
+-MATPLOTLIB: 3.5.3
 
--Aggiustare il modello
-
--Cancellare variabili e file inutili
+-SCIKIT-IMAGE: 0.19.3
