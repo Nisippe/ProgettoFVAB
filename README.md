@@ -18,3 +18,14 @@
 -MATPLOTLIB: 3.5.3
 
 -SCIKIT-IMAGE: 0.19.3
+
+
+## PATH per il main:
+Lanciare il main dalla cartella PYTHON con questi 3 argomenti:
+
+
+-ARG1: Path della cartella dei video f.e. "C:\Users\drugo\PycharmProjects\ProgettoFVAB\test"
+
+-ARG2: Path del file csv f.e. "C:\Users\drugo\PycharmProjects\ProgettoFVAB\CSV\responses_test.csv"
+
+-ARG3: Path del progetto f.e. "C:\Users\drugo\PycharmProjects\ProgettoFVAB"

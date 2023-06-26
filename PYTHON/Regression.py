@@ -54,4 +54,4 @@ def train_model(model,emozione):
     plt.plot(history.history["val_loss"], label="Validation Loss")
     plt.legend()
     plt.show()
-    model.save('Modello'+str(emozione)+'.keras')
+    #model.save('Modello'+str(emozione)+'.keras')

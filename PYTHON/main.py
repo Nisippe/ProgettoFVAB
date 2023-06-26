@@ -28,7 +28,7 @@ def getEtichettaFromVideo(n,emozione):
     :param emozione: quale emozione scegliere (happy,angry,sad,neutral)
     :return: percentuale dell'n-esimo video data quell'emozione
     """
-    p = pd.read_csv(arg3+'/TXT/Etichette_Percentuali.txt')
+    p = pd.read_csv(arg3+'/TXT/Etichette_Percentuali_Test.txt')
     etichetta=p.loc[:,emozione]
     return etichetta[n]
 
@@ -40,6 +40,8 @@ def create_etichette_perc(medieColonne,etichette_perc,n):
     :param etichette_perc: file csv etichette_percentuali
     """
     val = 0
+    if len(etichette_perc)>1:
+        return
     for i in range(n):
         list_perc = []
         list=[]
@@ -49,6 +51,7 @@ def create_etichette_perc(medieColonne,etichette_perc,n):
         for j in range(0,4):
             list.append(round(float((list_perc[j]/5)*100),1))
         print(list)
+        print(len(etichette_perc))
         etichette_perc.loc[i]=list
         etichette_perc.to_csv(arg3+'/TXT/Etichette_Percentuali_Test.txt',sep=',')
         val+=4
@@ -68,22 +71,24 @@ df2.to_csv(arg3+'/TXT/MediaColonneTest.txt',sep=',')
 cols=pd.read_csv(arg3+'/TXT/MediaColonneTest.txt')
 medieColonne=cols['mediaColonne']
 etichette_perc=pd.read_csv(arg3+'/TXT/Etichette_Percentuali_Test.txt')
-num_video=len(medieColonne)/4
+num_video=int(len(medieColonne)/4)
 create_etichette_perc(medieColonne,etichette_perc,num_video)
 
 
 '''VIDEOS'''
 videos=os.listdir(arg1)
-path2='cut'
-path3='landmarks'
+path2=arg3+'\\Video_Cut_Test\\'
+path3=arg3+'\\Video_Test_Landmarks\\'
 for video in videos:
-    vid=cv2.VideoCapture(arg1+video)
+    print(arg1+'\\'+video)
+    vid=cv2.VideoCapture(arg1+'\\'+video)
     fps = vid.get(cv2.CAP_PROP_FPS)
     width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
     codec = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter(path2 + str(video), codec, fps, (int(width), int(height)))
-    f.video_cut(f.getAllFramesFromVideo(vid),out)
+    f.video_cut_val(f.getAllFramesFromVideo(vid),out)
+    out.release()
 
 for video in videos:
     vid=cv2.VideoCapture(path2+video)
@@ -93,7 +98,7 @@ for video in videos:
     codec = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter(path3+video, codec, fps, (int(width), int(height)))
     f.video_Draw_Landmarks(vid,out)
-
+    out.release()
 
 
 
@@ -113,20 +118,20 @@ for video in videos:
     features=fe.extract_features_from_video(vid)
     list.append(features)
     list=np.array(list)
-    happy_t=f.getEtichettaFromVideo(j,'happy')
-    angry_t=f.getEtichettaFromVideo(j,'angry')
-    sad_t=f.getEtichettaFromVideo(j,'sad')
-    neutral_t=f.getEtichettaFromVideo(j,'neutral')
+    happy_t=getEtichettaFromVideo(j,'happy')
+    angry_t=getEtichettaFromVideo(j,'angry')
+    sad_t=getEtichettaFromVideo(j,'sad')
+    neutral_t=getEtichettaFromVideo(j,'neutral')
     happy=model_happy.predict(list)
     angry=model_angry.predict(list)
     sad=model_sad.predict(list)
     neutral=model_neutral.predict(list)
     j=j+1
     print('VIDEO: '+str(video))
-    print('% Happy: '+str(happy) + ' Differenza predizione/label: '+ round(abs(happy[0][0]-happy_t),2))
-    print('% Angry: ' + str(angry) + ' Differenza predizione/label: ' + round(abs(angry[0][0] - angry_t), 2))
-    print('% Sad: ' + str(sad) + ' Differenza predizione/label: ' + round(abs(sad[0][0] - sad_t), 2))
-    print('% Neutral: ' + str(neutral) + ' Differenza predizione/label: ' + round(abs(neutral[0][0] - neutral_t), 2))
+    print('% Happy: '+str(happy[0][0]) + ' Differenza predizione/label: '+ str(round(abs(happy[0][0]-happy_t),2)))
+    print('% Angry: ' + str(angry[0][0]) + ' Differenza predizione/label: ' + str(round(abs(angry[0][0] - angry_t), 2)))
+    print('% Sad: ' + str(sad[0][0]) + ' Differenza predizione/label: ' + str(round(abs(sad[0][0] - sad_t), 2)))
+    print('% Neutral: ' + str(neutral[0][0]) + ' Differenza predizione/label: ' + str(round(abs(neutral[0][0] - neutral_t), 2)))
 
 
 
